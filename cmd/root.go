@@ -64,16 +64,24 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
+	// Set up flags
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is %s/config.yaml)", homeConfigDir))
-	rootCmd.Flags().String("apikey", "", "OpenWeatherMap API key")
-	rootCmd.Flags().Float64("lat", 0.0, "latitude")
-	rootCmd.Flags().Float64("lon", 0.0, "longitude")
+	rootCmd.PersistentFlags().String("apikey", "", "OpenWeatherMap API key")
+	rootCmd.PersistentFlags().Float64("lat", 0.0, "latitude")
+	rootCmd.PersistentFlags().Float64("lon", 0.0, "longitude")
+	rootCmd.PersistentFlags().String("units", "metric", "units (metric, imperial, or standard)")
+	rootCmd.PersistentFlags().Bool("json", false, "json output")
+	rootCmd.PersistentFlags().Bool("yaml", false, "yaml output")
+	rootCmd.PersistentFlags().Bool("toml", false, "toml output")
 
+	// Bind flags to viper
 	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
 	viper.BindPFlag("lat", rootCmd.PersistentFlags().Lookup("lat"))
 	viper.BindPFlag("lon", rootCmd.PersistentFlags().Lookup("lon"))
-
-	rootCmd.MarkFlagRequired("apikey")
+	viper.BindPFlag("units", rootCmd.PersistentFlags().Lookup("units"))
+	viper.BindPFlag("json", rootCmd.PersistentFlags().Lookup("json"))
+	viper.BindPFlag("yaml", rootCmd.PersistentFlags().Lookup("yaml"))
+	viper.BindPFlag("toml", rootCmd.PersistentFlags().Lookup("toml"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -88,7 +96,8 @@ func initConfig() {
 		viper.SetConfigName("config")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	// read in environment variables that match
+	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
 	viper.ReadInConfig()
