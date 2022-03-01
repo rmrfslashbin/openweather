@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -33,16 +34,10 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "openweather",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Short: "Fetch weather data from OpenWeatherMap",
+	Long: `Fetch weather data from OpenWeatherMap. 
+An API key is required. See https://openweathermap.org/ for more information. 
+API Key, lat, and lon can be provided via flags or via a config file.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -60,14 +55,16 @@ func init() {
 	log.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp: true,
 	})
+	var err error
+
+	// Find home directory.
+	homeConfigDir, err = os.UserConfigDir()
+	cobra.CheckErr(err)
+	homeConfigDir = path.Join(homeConfigDir, "openweather")
 
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME_CONFIG/openweather/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is %s/config.yaml)", homeConfigDir))
 	rootCmd.Flags().String("apikey", "", "OpenWeatherMap API key")
 	rootCmd.Flags().Float64("lat", 0.0, "latitude")
 	rootCmd.Flags().Float64("lon", 0.0, "longitude")
@@ -85,13 +82,8 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserConfigDir()
-		cobra.CheckErr(err)
-		home = path.Join(home, "openweather")
-
 		// Search config in home directory with name ".openweather" (without extension).
-		viper.AddConfigPath(home)
+		viper.AddConfigPath(homeConfigDir)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("config")
 	}

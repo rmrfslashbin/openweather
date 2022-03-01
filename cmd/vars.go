@@ -3,6 +3,7 @@ package cmd
 import "github.com/sirupsen/logrus"
 
 var (
-	log     *logrus.Logger
-	cfgFile string
+	log           *logrus.Logger
+	cfgFile       string
+	homeConfigDir string
 )

@@ -1,12 +1,14 @@
 package openweather
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,13 +32,14 @@ type Option func(c *Config)
 
 // database configs
 type Config struct {
-	log      *logrus.Logger
-	apikey   string
-	location *Location
-	excludes string
-	units    string
-	lang     string
-	rooturl  *url.URL
+	log         *logrus.Logger
+	apikey      string
+	location    *Location
+	excludes    string
+	units       string
+	lang        string
+	rooturl     *url.URL
+	iconurlRoot string
 }
 
 type Location struct {
@@ -92,7 +95,7 @@ type ResponseHourly struct {
 	WindSpeed  float64            `json:"wind_speed"`
 	WindGust   float64            `json:"wind_gust"`
 	WindDeg    int                `json:"wind_deg"`
-	Pop        int                `json:"pop"`
+	Pop        float64            `json:"pop"`
 	Rain       float64            `json:"rain"`
 	Snow       float64            `json:"snow"`
 	Weather    []*ResponseWeather `json:"weather"`
@@ -127,26 +130,27 @@ type ResponseDaily struct {
 	WindDeg   int                `json:"wind_deg"`
 	Clouds    int                `json:"clouds"`
 	Uvi       float64            `json:"uvi"`
-	Pop       int                `json:"pop"`
+	Pop       float64            `json:"pop"`
 	Rain      float64            `json:"rain"`
 	Snow      float64            `json:"snow"`
 	Weather   []*ResponseWeather `json:"weather"`
 }
 
 type ResponseAlerts struct {
-	SenderName  string `json:"sender_name"`
-	Event       string `json:"event"`
-	Start       int64  `json:"start"`
-	End         int64  `json:"end"`
-	Description string `json:"description"`
-	Tags        string `json:"tags"`
+	SenderName  string   `json:"sender_name"`
+	Event       string   `json:"event"`
+	Start       int64    `json:"start"`
+	End         int64    `json:"end"`
+	Description string   `json:"description"`
+	Tags        []string `json:"tags"`
 }
 
 type ResponseWeather struct {
-	ID          int    `json:"id"`
-	Main        string `json:"main"`
-	Description string `json:"description"`
-	Icon        string `json:"icon"`
+	ID          int      `json:"id"`
+	Main        string   `json:"main"`
+	Description string   `json:"description"`
+	Icon        string   `json:"icon"`
+	IconURL     *url.URL `json:"icon_url"`
 }
 
 func init() {
@@ -194,6 +198,7 @@ func New(opts ...func(*Config)) (*Config, error) {
 		Path:   "/data/2.5/onecall",
 	}
 
+	config.iconurlRoot = "https://openweathermap.org/img/wn/"
 	return config, nil
 }
 
@@ -296,6 +301,60 @@ func (c *Config) Run() error {
 		}).Error("error reading data")
 		return err
 	}
-	fmt.Println(string(body))
+
+	res := &Response{}
+	if err := json.Unmarshal(body, res); err != nil {
+		c.log.WithFields(logrus.Fields{
+			"error": err,
+			"url":   c.rooturl.String(),
+		}).Error("error unmarshalling data")
+		fmt.Println(string(body))
+		return err
+	}
+	for _, v := range res.Current.Weather {
+		if v.Icon != "" {
+			v.IconURL, err = url.Parse(c.iconurlRoot + v.Icon + ".png")
+			if err != nil {
+				c.log.WithFields(logrus.Fields{
+					"error": err,
+					"url":   c.rooturl.String(),
+				}).Error("error parsing icon url")
+				return err
+			}
+		}
+	}
+
+	for _, v := range *res.Hourly {
+		for _, vv := range v.Weather {
+			if vv.Icon != "" {
+				vv.IconURL, err = url.Parse(c.iconurlRoot + vv.Icon + ".png")
+				if err != nil {
+					c.log.WithFields(logrus.Fields{
+						"error": err,
+						"url":   c.rooturl.String(),
+					}).Error("error parsing icon url")
+					return err
+				}
+			}
+		}
+	}
+
+	for _, v := range *res.Daily {
+		for _, vv := range v.Weather {
+			if vv.Icon != "" {
+				vv.IconURL, err = url.Parse(c.iconurlRoot + vv.Icon + ".png")
+				if err != nil {
+					c.log.WithFields(logrus.Fields{
+						"error": err,
+						"url":   c.rooturl.String(),
+					}).Error("error parsing icon url")
+					return err
+				}
+			}
+		}
+	}
+
+	spew.Dump(res)
+
 	return nil
 }
