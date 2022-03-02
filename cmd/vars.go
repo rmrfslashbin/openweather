@@ -6,4 +6,5 @@ var (
 	log           *logrus.Logger
 	cfgFile       string
 	homeConfigDir string
+	Version       string
 )

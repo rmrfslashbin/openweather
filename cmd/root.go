@@ -33,8 +33,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "openweather",
-	Short: "Fetch weather data from OpenWeatherMap",
+	Use:     "openweather",
+	Version: Version,
+	Short:   "Fetch weather data from OpenWeatherMap",
 	Long: `Fetch weather data from OpenWeatherMap. 
 An API key is required. See https://openweathermap.org/ for more information. 
 API Key, lat, and lon can be provided via flags or via a config file.`,
