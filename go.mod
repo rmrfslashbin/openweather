@@ -3,6 +3,7 @@ module github.com/rmrfslashbin/openweather
 go 1.17
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/pelletier/go-toml v1.9.4
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v1.3.0

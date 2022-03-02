@@ -74,6 +74,7 @@ func init() {
 	rootCmd.PersistentFlags().Bool("json", false, "json output")
 	rootCmd.PersistentFlags().Bool("yaml", false, "yaml output")
 	rootCmd.PersistentFlags().Bool("toml", false, "toml output")
+	rootCmd.PersistentFlags().Bool("brief", false, "brief/consolidated output")
 
 	// Bind flags to viper
 	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
@@ -83,6 +84,7 @@ func init() {
 	viper.BindPFlag("json", rootCmd.PersistentFlags().Lookup("json"))
 	viper.BindPFlag("yaml", rootCmd.PersistentFlags().Lookup("yaml"))
 	viper.BindPFlag("toml", rootCmd.PersistentFlags().Lookup("toml"))
+	viper.BindPFlag("brief", rootCmd.PersistentFlags().Lookup("brief"))
 }
 
 // initConfig reads in config file and ENV variables if set.
