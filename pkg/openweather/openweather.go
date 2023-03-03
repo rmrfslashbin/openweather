@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pelletier/go-toml"
 	"github.com/rs/zerolog"
 	"gopkg.in/yaml.v2"
@@ -225,8 +224,6 @@ func (c *Openweather) GetOneCallWeather() (*Weather, error) {
 		fmt.Println(string(body))
 		return nil, err
 	}
-	fmt.Println(string(body))
-	spew.Dump(weather)
 
 	// Add weather icons to current forcast
 	for _, v := range weather.Current.Weather {
