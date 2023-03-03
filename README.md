@@ -33,7 +33,7 @@ Commands:
 
 Run "openweather <command> --help" for more information on a command.
 ```
-### Exmaple
+### Example
 ```
 $ ./openweather lookup --apikey ${APIKEY}  --city atlanta,ga,us --text                                                                                                         1 ↵
 {"level":"info","app_name":"openweather","log_level":"info","time":"2023-03-03T18:45:52-05:00","message":"starting up"}
