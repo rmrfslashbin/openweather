@@ -1,4 +1,0 @@
-apikey: {YOUR_OPENWEATHER_API_KEY}
-lat: 0.00
-lon: -0.00
-units: [imperial | metric | standard]
