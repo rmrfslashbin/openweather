@@ -18,7 +18,8 @@ const (
 // Context is used to pass context/global configs to the commands
 type Context struct {
 	// log is the logger
-	log *zerolog.Logger
+	log    *zerolog.Logger
+	apikey string
 }
 
 // CurrentCmd updates the GTFS feed specs
@@ -26,14 +27,13 @@ type CurrentCmd struct {
 	Metric   bool    `name:"metric" required:"" group:"unit" xor:"unit" help:"Use metric units."`
 	Imperial bool    `name:"imperial" required:"" group:"unit" xor:"unit" help:"Use imperial units."`
 	Standard bool    `name:"standard" required:"" group:"unit" xor:"unit" help:"Use standard units."`
-	Lat      float64 `name:"lat" required:"" help:"Latitude."`
-	Lon      float64 `name:"lon" required:"" help:"Longitude."`
+	Lat      float64 `name:"lat" env:"LAT" required:"" help:"Latitude."`
+	Lon      float64 `name:"lon" env:"LON" required:"" help:"Longitude."`
 	Json     bool    `name:"json" required:"" group:"output" xor:"output" help:"Output the results as JSON."`
 	Yaml     bool    `name:"yaml" required:"" group:"output" xor:"output" help:"Output the results as YAML."`
 	Toml     bool    `name:"toml" required:"" group:"output" xor:"output" help:"Output the results as TOML."`
 	Text     bool    `name:"text" required:"" group:"output" xor:"output" help:"Output the results as text."`
 	Brief    bool    `name:"brief"  help:"Output brief text results."`
-	APIKey   string  `name:"apikey" required:"" help:"The OpenWeatherMap API key."`
 }
 
 // Run is the entry point for the CurrentCmd command
@@ -49,7 +49,7 @@ func (r *CurrentCmd) Run(ctx *Context) error {
 
 	// Set up the OpenWeatherMap client
 	ow, err := openweather.New(
-		openweather.WithAPIKey(r.APIKey),
+		openweather.WithAPIKey(ctx.apikey),
 		openweather.WithLocation(&openweather.Location{
 			Lat: r.Lat,
 			Lon: r.Lon,
@@ -94,21 +94,20 @@ func (r *CurrentCmd) Run(ctx *Context) error {
 
 // GeoLookupCmd looks up the location of a zip/post code or city
 type GeoLookupCmd struct {
-	APIKey string `name:"apikey" required:"" help:"The OpenWeatherMap API key."`
-	Zip    string `name:"zip" required:"" group:"by" xor:"by" help:"Zip/post code and country code divided by comma. Please use ISO 3166 country codes. (ex: 30318 or 30318,US)"`
-	City   string `name:"city" required:"" group:"by" xor:"by" help:"City name, state code (only for the US) and country code divided by comma. Please use ISO 3166 country codes. (ex: Atlanta or Atlanta,US or Atlanta,GA,US)"`
-	Json   bool   `name:"json" required:"" group:"output" xor:"output" help:"Output the results as JSON."`
-	Yaml   bool   `name:"yaml" required:"" group:"output" xor:"output" help:"Output the results as YAML."`
-	Toml   bool   `name:"toml" required:"" group:"output" xor:"output" help:"Output the results as TOML."`
-	Text   bool   `name:"text" required:"" group:"output" xor:"output" help:"Output the results as text."`
-	Lang   string `name:"lang" default:"en" help:"Language code for the output."`
+	Zip  string `name:"zip" required:"" group:"by" xor:"by" help:"Zip/post code and country code divided by comma. Please use ISO 3166 country codes. (ex: 30318 or 30318,US)"`
+	City string `name:"city" required:"" group:"by" xor:"by" help:"City name, state code (only for the US) and country code divided by comma. Please use ISO 3166 country codes. (ex: Atlanta or Atlanta,US or Atlanta,GA,US)"`
+	Json bool   `name:"json" required:"" group:"output" xor:"output" help:"Output the results as JSON."`
+	Yaml bool   `name:"yaml" required:"" group:"output" xor:"output" help:"Output the results as YAML."`
+	Toml bool   `name:"toml" required:"" group:"output" xor:"output" help:"Output the results as TOML."`
+	Text bool   `name:"text" required:"" group:"output" xor:"output" help:"Output the results as text."`
+	Lang string `name:"lang" default:"en" help:"Language code for the output."`
 }
 
 // Run is the entry point for the GeoLookupCmd command
 func (r *GeoLookupCmd) Run(ctx *Context) error {
 	// Set up the OpenWeatherMap client
 	gc, err := geocode.New(
-		geocode.WithAPIKey(r.APIKey),
+		geocode.WithAPIKey(ctx.apikey),
 	)
 	if err != nil {
 		return err
@@ -187,7 +186,8 @@ func (r *GeoLookupCmd) Run(ctx *Context) error {
 // CLI is the main CLI struct
 type CLI struct {
 	// Global flags/args
-	LogLevel string `name:"loglevel" env:"LOGLEVEL" default:"debug" enum:"panic,fatal,error,warn,info,debug,trace" help:"Set the log level."`
+	APIKey   string `name:"apikey" env:"APIKEY" required:"" help:"The OpenWeatherMap API key."`
+	LogLevel string `name:"loglevel" env:"LOGLEVEL" default:"info" enum:"panic,fatal,error,warn,info,debug,trace" help:"Set the log level."`
 
 	Current CurrentCmd   `cmd:"" help:"Get current weather conditions."`
 	Lookup  GeoLookupCmd `cmd:"" help:"Lookup lat/lon data for a location."`
@@ -231,7 +231,8 @@ func main() {
 
 	// Call the Run() method of the selected parsed command.
 	err = ctx.Run(&Context{
-		log: &log,
+		apikey: cli.APIKey,
+		log:    &log,
 	})
 
 	// FatalIfErrorf terminates with an error message if err != nil
