@@ -66,7 +66,7 @@ func New(opts ...func(*Openweather)) (*Openweather, error) {
 		// https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={API key}
 		Scheme: "https",
 		Host:   "api.openweathermap.org",
-		Path:   "/data/3.0/onecall",
+		Path:   "/data/2.5/onecall",
 	}
 
 	// OpenWeatherMap image URL
