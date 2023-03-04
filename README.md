@@ -10,6 +10,9 @@ A latitude and longitude pair representing the desired forecast are required to 
 ## CLI
 A CLI is available to interact with the library.
 
+### Build
+The provided `Makefile` will build the CLI for your platform. The binary will be placed in the `bin` directory.
+
 ### Usage
 - Use the `lookup` command to get the latitude and longitude for a location.
 - Use the `current` command to get the current weather conditions for a location. Choose between metric, imperial, or standard units (the default is metric). Then choose an output format. `text` will print the output to the console in a human readable format- add `brief` to show a summary. `json`, `yaml`, and `toml` will print the output to the console in the specified format.
