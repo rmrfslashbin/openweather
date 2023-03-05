@@ -354,7 +354,7 @@ func (weather *Weather) Text(brief bool) error {
 	} else {
 
 		// Print the current weather conditions
-		fmt.Printf("Current weather for %f, %f as of %s\n", weather.Lat, weather.Lon, dt.Local())
+		fmt.Printf("Current weather for %f, %f as of %s (%s)\n", weather.Lat, weather.Lon, dt.Local(), weather.Timezone)
 		fmt.Printf("%s %s (%s)\n",
 			Emojis[weather.Current.Weather[0].Icon],
 			weather.Current.Weather[0].Main,

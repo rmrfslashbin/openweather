@@ -28,7 +28,7 @@ type Weather struct {
 	Units          string          `json:"units"`
 	Lat            float64         `json:"lat"`
 	Lon            float64         `json:"lon"`
-	Timezone       int             `json:"timezone"`
+	Timezone       string          `json:"timezone"`
 	TimezoneOffset int             `json:"timezone_offset"`
 	Current        *WeatherCurrent `json:"current"`
 	Minutely       []struct {
