@@ -2,7 +2,7 @@
 Golang library to interface with OpenWeather Map (dot) org.
 
 ## API Key
-An API key from https://home.openweathermap.org/api_keys is required to use the library.
+An API key from https://home.openweathermap.org/api_keys is required to use the library. This library/CLI uses the "one call API 3.0" (https://openweathermap.org/api/one-call-3), which is available to accounts with billing on file. An API key is premitted to make 1000 calls per day for free. See https://openweathermap.org/price for more info. This library may support the free "weather API" in the future.
 
 ## Location
 A latitude and longitude pair representing the desired forecast are required to use the library.

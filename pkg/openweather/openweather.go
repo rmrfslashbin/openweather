@@ -65,7 +65,7 @@ func New(opts ...func(*Openweather)) (*Openweather, error) {
 		// https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={API key}
 		Scheme: "https",
 		Host:   "api.openweathermap.org",
-		Path:   "/data/2.5/onecall",
+		Path:   "/data/3.0/onecall",
 	}
 
 	// OpenWeatherMap image URL
@@ -226,23 +226,10 @@ func (c *Openweather) GetOneCallWeather() (*Weather, error) {
 	}
 
 	// Add weather icons to current forcast
-	for _, v := range weather.Current.Weather {
-		if v.Icon != "" {
-			v.IconURL, err = url.Parse(c.iconurlRoot + v.Icon + ".png")
-			if err != nil {
-				c.log.Error().
-					Str("url", c.rooturl.String()).
-					Msg("error parsing icon url")
-				return nil, err
-			}
-		}
-	}
-
-	// Add weather icons to hourly forcast
-	for _, v := range *weather.Hourly {
-		for _, vv := range v.Weather {
-			if vv.Icon != "" {
-				vv.IconURL, err = url.Parse(c.iconurlRoot + vv.Icon + ".png")
+	if weather.Current != nil {
+		for _, v := range weather.Current.Weather {
+			if v.Icon != "" {
+				v.IconURL, err = url.Parse(c.iconurlRoot + v.Icon + ".png")
 				if err != nil {
 					c.log.Error().
 						Str("url", c.rooturl.String()).
@@ -253,16 +240,35 @@ func (c *Openweather) GetOneCallWeather() (*Weather, error) {
 		}
 	}
 
+	// Add weather icons to hourly forcast
+	if weather.Hourly != nil {
+		for _, v := range *weather.Hourly {
+			for _, vv := range v.Weather {
+				if vv.Icon != "" {
+					vv.IconURL, err = url.Parse(c.iconurlRoot + vv.Icon + ".png")
+					if err != nil {
+						c.log.Error().
+							Str("url", c.rooturl.String()).
+							Msg("error parsing icon url")
+						return nil, err
+					}
+				}
+			}
+		}
+	}
+
 	// Add weather icons to daily forcast
-	for _, v := range *weather.Daily {
-		for _, vv := range v.Weather {
-			if vv.Icon != "" {
-				vv.IconURL, err = url.Parse(c.iconurlRoot + vv.Icon + ".png")
-				if err != nil {
-					c.log.Error().
-						Str("url", c.rooturl.String()).
-						Msg("error parsing icon url")
-					return nil, err
+	if weather.Daily != nil {
+		for _, v := range *weather.Daily {
+			for _, vv := range v.Weather {
+				if vv.Icon != "" {
+					vv.IconURL, err = url.Parse(c.iconurlRoot + vv.Icon + ".png")
+					if err != nil {
+						c.log.Error().
+							Str("url", c.rooturl.String()).
+							Msg("error parsing icon url")
+						return nil, err
+					}
 				}
 			}
 		}
