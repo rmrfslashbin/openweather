@@ -187,7 +187,7 @@ func (r *GeoLookupCmd) Run(ctx *Context) error {
 type CLI struct {
 	// Global flags/args
 	APIKey   string `name:"apikey" env:"APIKEY" required:"" help:"The OpenWeatherMap API key."`
-	LogLevel string `name:"loglevel" env:"LOGLEVEL" default:"info" enum:"panic,fatal,error,warn,info,debug,trace" help:"Set the log level."`
+	LogLevel string `name:"loglevel" env:"LOGLEVEL" default:"error" enum:"panic,fatal,error,warn,info,debug,trace" help:"Set the log level."`
 
 	Current CurrentCmd   `cmd:"" help:"Get current weather conditions."`
 	Lookup  GeoLookupCmd `cmd:"" help:"Lookup lat/lon data for a location."`

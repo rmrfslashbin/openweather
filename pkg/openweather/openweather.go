@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/pelletier/go-toml"
@@ -311,7 +312,7 @@ func (weather *Weather) Text(brief bool) error {
 	}
 
 	if brief {
-		fmt.Printf("Current weather as of %s\n", dt.Local())
+		fmt.Printf("\nCurrent weather as of %s\n", dt.Local())
 		fmt.Printf("  %s %s (%s) Temperature: %.1f%s Feels like: %1.f%s\n",
 			Emojis[weather.Current.Weather[0].Icon],
 			weather.Current.Weather[0].Main,
@@ -322,9 +323,34 @@ func (weather *Weather) Text(brief bool) error {
 		fmt.Printf("  Wind speed: %.1f %s from %d°\n", weather.Current.WindSpeed, speed, weather.Current.WindDeg)
 		fmt.Printf("  Cloudiness: %d%% UV index: %.1f\n", weather.Current.Clouds, weather.Current.Uvi)
 
-		for _, day := range *weather.Daily {
+		fmt.Println("\nNext six hours")
+		w := tabwriter.NewWriter(os.Stdout, 1, 0, 1, ' ', tabwriter.Debug)
+		fmt.Fprintln(w, "Time\t Condition\t Temp\t Wind\t Precip\t UV index")
+		for i, hour := range *weather.Hourly {
+			// Only show the next 12 hours
+			if i >= 6 {
+				break
+			}
+			ts := time.Unix(hour.Dt, 0)
+			fmt.Fprintf(w, "%02d:%02d %s (%d-%d-%02d)\t %s %s\t %.1f%s\t %.1f %s\t %.1f%%\t %.1f\n",
+				//fmt.Printf("  %02d:%02d %s (%d-%d-%02d ) %s %s Temp: %.1f%s Wind: %.1f %s Precip: %.1f%% UV index: %.1f\n",
+				ts.Local().Hour(), ts.Local().Minute(), ts.Local().Weekday(), ts.Local().Year(), ts.Local().Day(), ts.Local().Day(),
+				Emojis[hour.Weather[0].Icon],
+				hour.Weather[0].Description,
+				hour.Temp, unit,
+				hour.WindSpeed, speed,
+				hour.Pop,
+				hour.Uvi,
+			)
+		}
+		w.Flush()
+
+		for i, day := range *weather.Daily {
+			if i == 0 {
+				continue // skip today
+			}
 			ts := time.Unix(day.Dt, 0)
-			fmt.Printf("\n%s (%d %s %02d)\n", ts.Local().Weekday(), ts.Local().Year(), ts.Local().Month(), ts.Local().Day())
+			fmt.Printf("\nTmorrow: %s (%d %s %02d)\n", ts.Local().Weekday(), ts.Local().Year(), ts.Local().Month(), ts.Local().Day())
 			fmt.Printf("  %s %s (%s) High %.1f%s Low %.1f%s with %.1f%% chance of precipitation\n",
 				Emojis[day.Weather[0].Icon],
 				day.Weather[0].Main,
@@ -332,23 +358,7 @@ func (weather *Weather) Text(brief bool) error {
 				day.Temp.Max, unit, day.Temp.Min, unit,
 				day.Pop,
 			)
-		}
-
-		for i, hour := range *weather.Hourly {
-			// Only show the next 12 hours
-			if i >= 12 {
-				break
-			}
-			ts := time.Unix(hour.Dt, 0)
-			fmt.Printf("\n%s (%d %s %02d %02d:%02d) %s %s Temp: %.1f%s Wind: %.1f %s Precip: %.1f%%\n",
-				ts.Local().Weekday(), ts.Local().Year(), ts.Local().Month(), ts.Local().Day(), ts.Local().Hour(), ts.Local().Minute(),
-				Emojis[hour.Weather[0].Icon],
-				hour.Weather[0].Description,
-				hour.Temp, unit,
-				hour.WindSpeed, speed,
-				hour.Pop,
-			)
-
+			break // just show the first day
 		}
 
 	} else {
@@ -376,19 +386,6 @@ func (weather *Weather) Text(brief bool) error {
 		fmt.Printf("  Sunrise: %s\n", sunrise.Local())
 		fmt.Printf("  Sunset: %s\n", sunset.Local())
 
-		// If alerts, print them
-		if weather.Alerts != nil {
-			fmt.Println("\nAlerts:")
-			for _, alert := range *weather.Alerts {
-				start := time.Unix(alert.Start, 0)
-				end := time.Unix(alert.End, 0)
-				fmt.Println("---")
-				fmt.Printf("  %s :: %s\n", alert.SenderName, alert.Event)
-				fmt.Printf("  From %s :: Until %s\n", start.Local(), end.Local())
-				fmt.Printf("  %s\n", alert.Description)
-				fmt.Println("---")
-			}
-		}
 		fmt.Println()
 
 		// If daily forecast, print it
@@ -430,6 +427,21 @@ func (weather *Weather) Text(brief bool) error {
 			)
 
 		}
+	}
+	// If alerts, print them
+	if weather.Alerts != nil {
+		fmt.Println("\nAlerts:")
+		for _, alert := range *weather.Alerts {
+			start := time.Unix(alert.Start, 0)
+			end := time.Unix(alert.End, 0)
+			fmt.Println("---")
+			fmt.Printf("  %s :: %s\n", alert.SenderName, alert.Event)
+			fmt.Printf("  From %s :: Until %s\n", start.Local(), end.Local())
+			fmt.Printf("  %s\n", alert.Description)
+			fmt.Println("---")
+		}
+	} else {
+		fmt.Println("\nNo alerts")
 	}
 	return nil
 }
