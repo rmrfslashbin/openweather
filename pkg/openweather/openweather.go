@@ -149,6 +149,13 @@ func WithLogger(log *zerolog.Logger) Option {
 	}
 }
 
+// WithRootURL sets the root URL
+func WithRootURL(rooturl *url.URL) Option {
+	return func(c *Openweather) {
+		c.rooturl = rooturl
+	}
+}
+
 // WithUnits sets the units
 func WithUnits(units int) Option {
 	return func(c *Openweather) {
@@ -295,6 +302,7 @@ func (w *Weather) ToYAML() ([]byte, error) {
 	return yaml.Marshal(w)
 }
 
+// Text returns the weather as text
 func (weather *Weather) Text(brief bool) error {
 	// Get the times
 	dt := time.Unix(weather.Current.Dt, 0)

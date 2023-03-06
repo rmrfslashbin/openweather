@@ -74,6 +74,13 @@ func WithAPIKey(apikey string) Option {
 	}
 }
 
+// WithDirectUrl sets the direct URL
+func WithDirectUrl(directUrl *url.URL) Option {
+	return func(c *Geocoder) {
+		c.directUrl = directUrl
+	}
+}
+
 // WithLogger sets the logger
 func WithLogger(log *zerolog.Logger) Option {
 	return func(c *Geocoder) {
@@ -88,6 +95,13 @@ func WithLanguage(lang string) Option {
 	}
 }
 
+// WithZipUrl sets the zip URL
+func WithZipUrl(zipUrl *url.URL) Option {
+	return func(c *Geocoder) {
+		c.zipUrl = zipUrl
+	}
+}
+
 func (c *Geocoder) ByCity(city string) (*DirectResponse, error) {
 	// Construct the query
 	q := c.directUrl.Query()
@@ -97,6 +111,10 @@ func (c *Geocoder) ByCity(city string) (*DirectResponse, error) {
 	c.directUrl.RawQuery = q.Encode()
 
 	// Make the request
+	c.log.Debug().
+		Str("url", c.directUrl.String()).
+		Msg("getting direct lookup data")
+
 	httpResponse, err := http.Get(c.directUrl.String())
 	if err != nil {
 		c.log.Error().
@@ -137,6 +155,10 @@ func (c *Geocoder) ByZip(zip string) (*ZipResponse, error) {
 	c.zipUrl.RawQuery = q.Encode()
 
 	// Make the request
+	c.log.Debug().
+		Str("url", c.zipUrl.String()).
+		Msg("getting zip lookup data")
+
 	httpResponse, err := http.Get(c.zipUrl.String())
 	if err != nil {
 		c.log.Error().
