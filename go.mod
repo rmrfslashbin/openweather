@@ -3,7 +3,7 @@ module github.com/rmrfslashbin/openweather
 go 1.20
 
 require (
-	github.com/alecthomas/kong v0.7.1
+	github.com/alecthomas/kong v0.9.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/rs/zerolog v1.29.0
 	gopkg.in/yaml.v2 v2.4.0
